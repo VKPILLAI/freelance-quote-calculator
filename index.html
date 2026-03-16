@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Freelance Quote Calculator — 2171 Visual Universe</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream:    #f5f0e8;
+    --cream2:   #ede8de;
+    --cream3:   #e3ddd2;
+    --ink:      #1a1814;
+    --ink2:     #2e2b26;
+    --ink3:     #4a4640;
+    --muted:    #9a9488;
+    --rule:     #d5cfc4;
+    --amber:    #c47e1a;
+    --amber-bg: #fdf3e0;
+    --amber-dk: #8a5610;
+    --green:    #2d6a4f;
+    --green-bg: #e8f5ef;
+    --red:      #b94040;
+    --red-bg:   #fdeaea;
+    --sans:     'Instrument Sans', sans-serif;
+    --serif:    'Playfair Display', serif;
+    --mono:     'IBM Plex Mono', monospace;
+    --radius:   4px;
+    --radius-lg: 10px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: var(--sans);
+    min-height: 100vh;
+  }
+
+  /* ─── PAPER TEXTURE ─── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.028'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ─── LAYOUT ─── */
+  .wrap { max-width: 820px; margin: 0 auto; padding: 0 28px; position: relative; z-index: 1; }
+
+  /* ─── HEADER ─── */
+  header {
+    padding: 52px 0 0;
+    margin-bottom: 0;
+  }
+
+  .header-eyebrow {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .header-eyebrow::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+
+  .header-eyebrow span { color: var(--amber); }
+
+  h1 {
+    font-family: var(--serif);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 400;
+    line-height: 1.1;
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+
+  h1 em {
+    color: var(--amber);
+    font-style: italic;
+  }
+
+  .header-sub {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.65;
+    max-width: 460px;
+    margin-bottom: 40px;
+  }
+
+  .header-rule {
+    height: 1px;
+    background: var(--ink);
+    margin-bottom: 44px;
+    position: relative;
+  }
+
+  .header-rule::after {
+    content: '';
+    position: absolute;
+    left: 0; top: 3px;
+    height: 1px;
+    width: 60px;
+    background: var(--amber);
+  }
+
+  /* ─── TWO-COL ─── */
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 40px;
+    align-items: start;
+  }
+
+  @media (max-width: 680px) {
+    .layout { grid-template-columns: 1fr; }
+    .quote-panel { position: static !important; }
+  }
+
+  /* ─── FORM SECTIONS ─── */
+  .form-section { margin-bottom: 36px; }
+
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .section-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--cream);
+    background: var(--ink);
+    border-radius: 50%;
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink3);
+  }
+
+  .section-rule {
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+
+  /* ─── FIELDS ─── */
+  .field { margin-bottom: 16px; }
+
+  .field label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 7px;
+  }
+
+  .field select,
+  .field input[type="text"],
+  .field input[type="number"] {
+    width: 100%;
+    background: #fff;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 13.5px;
+    padding: 10px 13px;
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .field select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 4.5L11 1' stroke='%239a9488' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 13px center;
+    background-color: #fff;
+    padding-right: 34px;
+    cursor: pointer;
+  }
+
+  .field select option { background: #fff; color: var(--ink); }
+  .field select:focus,
+  .field input:focus { border-color: var(--amber); }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  /* ─── SLIDER ─── */
+  .slider-wrap { position: relative; }
+
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .slider-row input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 3px;
+    background: var(--rule);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .slider-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--ink);
+    border: 2px solid var(--cream);
+    box-shadow: 0 0 0 1px var(--ink);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .slider-row input[type="range"]::-webkit-slider-thumb:hover { background: var(--amber); box-shadow: 0 0 0 1px var(--amber); }
+
+  .slider-val {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    min-width: 28px;
+    text-align: right;
+  }
+
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+  }
+
+  .slider-labels span {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+
+  /* ─── TOGGLE ROW ─── */
+  .toggle-group { display: flex; flex-direction: column; gap: 10px; }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 14px;
+    background: #fff;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    user-select: none;
+  }
+
+  .toggle-row:hover { border-color: var(--amber); }
+
+  .toggle-row.active {
+    background: var(--amber-bg);
+    border-color: var(--amber);
+  }
+
+  .toggle-info { display: flex; flex-direction: column; gap: 2px; }
+
+  .toggle-name {
+    font-size: 13.5px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .toggle-desc {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .toggle-price {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--amber-dk);
+    font-weight: 500;
+    text-align: right;
+  }
+
+  .toggle-check {
+    width: 18px; height: 18px;
+    border: 1.5px solid var(--rule);
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-left: 12px;
+    transition: all 0.15s;
+    background: #fff;
+  }
+
+  .toggle-row.active .toggle-check {
+    background: var(--amber);
+    border-color: var(--amber);
+  }
+
+  .toggle-check::after {
+    content: '';
+    display: none;
+    width: 4px; height: 7px;
+    border: 1.5px solid #fff;
+    border-top: none; border-left: none;
+    transform: rotate(42deg) translateY(-1px);
+  }
+
+  .toggle-row.active .toggle-check::after { display: block; }
+
+  /* ─── CURRENCY ─── */
+  .currency-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .currency-btn {
+    flex: 1;
+    padding: 8px;
+    background: #fff;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+
+  .currency-btn.active {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--cream);
+  }
+
+  /* ─── QUOTE PANEL ─── */
+  .quote-panel {
+    position: sticky;
+    top: 28px;
+  }
+
+  .quote-card {
+    background: var(--ink);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    color: var(--cream);
+  }
+
+  .quote-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .quote-client {
+    font-family: var(--serif);
+    font-size: 17px;
+    color: var(--cream);
+    margin-bottom: 4px;
+    min-height: 24px;
+    font-style: italic;
+  }
+
+  .quote-project {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 24px;
+    min-height: 16px;
+  }
+
+  .quote-divider {
+    height: 1px;
+    background: #2e2b26;
+    margin: 16px 0;
+  }
+
+  .quote-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+
+  .quote-line-name {
+    font-size: 12.5px;
+    color: #9a9488;
+    line-height: 1.4;
+    flex: 1;
+    padding-right: 12px;
+  }
+
+  .quote-line-val {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--cream2);
+    white-space: nowrap;
+    font-weight: 500;
+  }
+
+  .quote-line-val.add { color: #e8a84a; }
+  .quote-line-val.sub { color: #6dbf8e; }
+  .quote-line-val.zero { color: #4a4640; }
+
+  .quote-total-wrap {
+    background: #111007;
+    border-radius: 6px;
+    padding: 18px 20px;
+    margin-top: 20px;
+  }
+
+  .quote-total-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .quote-total-range {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .quote-total-num {
+    font-family: var(--serif);
+    font-size: 2.2rem;
+    font-weight: 500;
+    color: var(--amber);
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+
+  .quote-meta {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .quote-meta-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 10.5px;
+  }
+
+  .quote-meta-row span:first-child { color: var(--muted); }
+  .quote-meta-row span:last-child  { color: var(--cream3); }
+
+  .btn-copy-quote {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: var(--amber);
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-copy-quote:hover { background: #d48e25; }
+  .btn-copy-quote.copied { background: var(--green); color: #fff; }
+
+  /* ─── DISCLAIMER ─── */
+  .disclaimer {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.6;
+    padding: 16px 0;
+    border-top: 1px solid var(--rule);
+    margin-top: 40px;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    padding: 28px 0 36px;
+    margin-top: 48px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .footer-brand {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .footer-brand strong { color: var(--amber); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-eyebrow">Tool v1.0 — <span>2171 Visual Universe</span> — Freelance Quote Calculator</div>
+    <h1>Price your work.<br><em>Confidently.</em></h1>
+    <p class="header-sub">Stop guessing. Input your project details and get a structured quote with itemised breakdown — ready to share with any client.</p>
+    <div class="header-rule"></div>
+  </header>
+
+  <div class="layout">
+
+    <!-- LEFT: FORM -->
+    <div class="form-col">
+
+      <!-- SECTION 1 -->
+      <div class="form-section">
+        <div class="section-head">
+          <span class="section-num">01</span>
+          <span class="section-title">Project Details</span>
+          <span class="section-rule"></span>
+        </div>
+
+        <div class="field">
+          <label>Client Name <span style="color:#c8c0b0; font-style:italic; text-transform:none;">(optional)</span></label>
+          <input type="text" id="client-name" placeholder="e.g. Shemon Jewellery" oninput="update()">
+        </div>
+
+        <div class="field">
+          <label>Project Type</label>
+          <select id="project-type" onchange="update()">
+            <option value="" disabled selected>Select one</option>
+            <option value="logo">Logo Design</option>
+            <option value="brand">Brand Identity (Full)</option>
+            <option value="social">Social Media Pack</option>
+            <option value="web">Website Design (UI/UX)</option>
+            <option value="print">Print / Campaign</option>
+            <option value="packaging">Packaging Design</option>
+            <option value="deck">Pitch Deck</option>
+            <option value="motion">Motion / Video Edit</option>
+            <option value="photo">Photo Art Direction</option>
+            <option value="retainer">Monthly Retainer</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Your Market / Currency</label>
+          <div class="currency-row">
+            <button class="currency-btn active" data-sym="₹" data-code="INR" onclick="setCurrency(this)">₹ INR</button>
+            <button class="currency-btn" data-sym="£" data-code="GBP" onclick="setCurrency(this)">£ GBP</button>
+            <button class="currency-btn" data-sym="$" data-code="USD" onclick="setCurrency(this)">$ USD</button>
+            <button class="currency-btn" data-sym="€" data-code="EUR" onclick="setCurrency(this)">€ EUR</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2 -->
+      <div class="form-section">
+        <div class="section-head">
+          <span class="section-num">02</span>
+          <span class="section-title">Scope & Complexity</span>
+          <span class="section-rule"></span>
+        </div>
+
+        <div class="field">
+          <label>Complexity Level</label>
+          <div class="slider-wrap">
+            <div class="slider-row">
+              <input type="range" id="complexity" min="1" max="5" value="3" step="1" oninput="update()">
+              <span class="slider-val" id="complexity-val">3</span>
+            </div>
+            <div class="slider-labels">
+              <span>Basic</span>
+              <span>Standard</span>
+              <span>Complex</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label>Revision Rounds</label>
+            <select id="revisions" onchange="update()">
+              <option value="1">1 round</option>
+              <option value="2" selected>2 rounds</option>
+              <option value="3">3 rounds</option>
+              <option value="4">Unlimited</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Client Experience</label>
+            <select id="client-exp" onchange="update()">
+              <option value="new">New client</option>
+              <option value="repeat" selected>Repeat client</option>
+              <option value="referral">Referral</option>
+              <option value="agency">Agency / Studio</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 3 -->
+      <div class="form-section">
+        <div class="section-head">
+          <span class="section-num">03</span>
+          <span class="section-title">Add-ons & Adjustments</span>
+          <span class="section-rule"></span>
+        </div>
+
+        <div class="toggle-group">
+          <div class="toggle-row" id="t-rush" onclick="toggleAddon('rush')">
+            <div class="toggle-info">
+              <span class="toggle-name">Rush Fee</span>
+              <span class="toggle-desc">Delivery in under 72 hours</span>
+            </div>
+            <span class="toggle-price" id="tp-rush">+25%</span>
+            <span class="toggle-check"></span>
+          </div>
+          <div class="toggle-row" id="t-usage" onclick="toggleAddon('usage')">
+            <div class="toggle-info">
+              <span class="toggle-name">Commercial Usage Rights</span>
+              <span class="toggle-desc">Print, ads, broadcast licensing</span>
+            </div>
+            <span class="toggle-price" id="tp-usage">+20%</span>
+            <span class="toggle-check"></span>
+          </div>
+          <div class="toggle-row" id="t-source" onclick="toggleAddon('source')">
+            <div class="toggle-info">
+              <span class="toggle-name">Source Files Included</span>
+              <span class="toggle-desc">AI, PSD, Figma, INDD originals</span>
+            </div>
+            <span class="toggle-price" id="tp-source">+15%</span>
+            <span class="toggle-check"></span>
+          </div>
+          <div class="toggle-row" id="t-strategy" onclick="toggleAddon('strategy')">
+            <div class="toggle-info">
+              <span class="toggle-name">Brand Strategy Session</span>
+              <span class="toggle-desc">1-hr positioning + moodboard call</span>
+            </div>
+            <span class="toggle-price" id="tp-strategy">+10%</span>
+            <span class="toggle-check"></span>
+          </div>
+          <div class="toggle-row" id="t-discount" onclick="toggleAddon('discount')">
+            <div class="toggle-info">
+              <span class="toggle-name">Repeat Client Discount</span>
+              <span class="toggle-desc">Loyalty pricing for ongoing work</span>
+            </div>
+            <span class="toggle-price" id="tp-discount" style="color: var(--green)">−10%</span>
+            <span class="toggle-check"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="disclaimer">
+        * Estimates are based on industry-standard creative pricing and may vary by region, experience level, and project specifics. Use as a starting point — always confirm with a formal contract.
+      </div>
+
+    </div>
+
+    <!-- RIGHT: QUOTE PANEL -->
+    <div class="quote-panel">
+      <div class="quote-card">
+
+        <div class="quote-label">Live Estimate</div>
+        <div class="quote-client" id="qc-client">Client Name</div>
+        <div class="quote-project" id="qc-project">Select a project type</div>
+
+        <div class="quote-divider"></div>
+
+        <div id="quote-lines">
+          <!-- Lines rendered by JS -->
+        </div>
+
+        <div class="quote-total-wrap">
+          <div class="quote-total-label">Estimated Total</div>
+          <div class="quote-total-num" id="q-total">—</div>
+          <div class="quote-total-range" id="q-range"></div>
+        </div>
+
+        <div class="quote-meta" id="q-meta">
+          <div class="quote-meta-row"><span>Timeline</span><span id="qm-timeline">—</span></div>
+          <div class="quote-meta-row"><span>Revisions</span><span id="qm-revisions">—</span></div>
+          <div class="quote-meta-row"><span>Valid for</span><span>7 days</span></div>
+          <div class="quote-meta-row"><span>Date</span><span id="qm-date"></span></div>
+        </div>
+
+        <button class="btn-copy-quote" id="copy-btn" onclick="copyQuote()">Copy Quote ↗</button>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="footer-inner">
+      <span class="footer-brand"><strong>2171 Visual Universe</strong> — Freelance Quote Calculator</span>
+      <span class="footer-brand" style="font-size:10px;">Know your worth. Quote it right.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ─── BASE RATES (INR)
+  const BASE = {
+    logo:      { name: 'Logo Design',              low: 8000,   high: 25000,  time: '3–7 days' },
+    brand:     { name: 'Brand Identity (Full)',     low: 30000,  high: 90000,  time: '2–4 weeks' },
+    social:    { name: 'Social Media Pack',         low: 8000,   high: 22000,  time: '1–2 weeks' },
+    web:       { name: 'Website Design (UI/UX)',    low: 25000,  high: 80000,  time: '3–6 weeks' },
+    print:     { name: 'Print / Campaign',          low: 12000,  high: 40000,  time: '1–3 weeks' },
+    packaging: { name: 'Packaging Design',          low: 15000,  high: 50000,  time: '2–4 weeks' },
+    deck:      { name: 'Pitch Deck',                low: 10000,  high: 35000,  time: '1–2 weeks' },
+    motion:    { name: 'Motion / Video Edit',       low: 15000,  high: 60000,  time: '3–10 days' },
+    photo:     { name: 'Photo Art Direction',       low: 12000,  high: 45000,  time: '1–3 days' },
+    retainer:  { name: 'Monthly Retainer',          low: 20000,  high: 70000,  time: 'Ongoing' },
+  };
+
+  // Currency multipliers vs INR
+  const FX = { INR: 1, GBP: 0.0095, USD: 0.012, EUR: 0.011 };
+  const FX_LABEL = { INR: '₹', GBP: '£', USD: '$', EUR: '€' };
+
+  let currency = 'INR';
+  let sym = '₹';
+  const addons = { rush: false, usage: false, source: false, strategy: false, discount: false };
+  const addonRates = { rush: 0.25, usage: 0.20, source: 0.15, strategy: 0.10, discount: -0.10 };
+
+  function setCurrency(btn) {
+    document.querySelectorAll('.currency-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currency = btn.dataset.code;
+    sym = btn.dataset.sym;
+    update();
+  }
+
+  function toggleAddon(key) {
+    addons[key] = !addons[key];
+    document.getElementById('t-' + key).classList.toggle('active', addons[key]);
+    update();
+  }
+
+  function fmt(n) {
+    const converted = Math.round(n * FX[currency]);
+    if (currency === 'INR') {
+      return sym + converted.toLocaleString('en-IN');
+    }
+    return sym + converted.toLocaleString('en-GB', { maximumFractionDigits: 0 });
+  }
+
+  function complexityLabel(v) {
+    const labels = { 1: 'Basic', 2: 'Simple', 3: 'Standard', 4: 'Advanced', 5: 'Complex' };
+    return labels[v] || 'Standard';
+  }
+
+  function complexityMult(v) {
+    // 1→0.6, 2→0.8, 3→1.0, 4→1.35, 5→1.75
+    const mults = { 1: 0.60, 2: 0.80, 3: 1.00, 4: 1.35, 5: 1.75 };
+    return mults[v] || 1;
+  }
+
+  function revisionLabel(v) {
+    if (v === '4') return 'Unlimited';
+    return v + (v === '1' ? ' round' : ' rounds');
+  }
+
+  function revisionMult(v) {
+    const m = { '1': 0.95, '2': 1.00, '3': 1.12, '4': 1.25 };
+    return m[v] || 1.00;
+  }
+
+  function clientMult(v) {
+    const m = { new: 1.00, repeat: 0.95, referral: 0.92, agency: 1.15 };
+    return m[v] || 1.00;
+  }
+
+  function update() {
+    const typeKey = document.getElementById('project-type').value;
+    const clientName = document.getElementById('client-name').value.trim();
+    const complexity = document.getElementById('complexity').value;
+    const revisions  = document.getElementById('revisions').value;
+    const clientExp  = document.getElementById('client-exp').value;
+
+    document.getElementById('complexity-val').textContent = complexity;
+
+    // Client / project display
+    document.getElementById('qc-client').textContent  = clientName || 'Client Name';
+    document.getElementById('qc-project').textContent = typeKey ? BASE[typeKey].name : 'Select a project type';
+
+    if (!typeKey) {
+      document.getElementById('quote-lines').innerHTML = '<p style="font-family:var(--mono);font-size:11px;color:#4a4640;padding:8px 0;">Complete the form to see your estimate.</p>';
+      document.getElementById('q-total').textContent = '—';
+      document.getElementById('q-range').textContent = '';
+      ['qm-timeline','qm-revisions'].forEach(id => document.getElementById(id).textContent = '—');
+      return;
+    }
+
+    const base = BASE[typeKey];
+    const cm = complexityMult(parseInt(complexity));
+    const rm = revisionMult(revisions);
+    const clm = clientMult(clientExp);
+
+    let midLow  = base.low  * cm * rm * clm;
+    let midHigh = base.high * cm * rm * clm;
+
+    // Build addon lines
+    let addonMult = 1;
+    const addonLines = [];
+    const addonKeys = ['rush','usage','source','strategy','discount'];
+    const addonNames = {
+      rush: 'Rush Fee', usage: 'Commercial Usage', source: 'Source Files',
+      strategy: 'Strategy Session', discount: 'Repeat Client Discount'
+    };
+
+    addonKeys.forEach(key => {
+      if (addons[key]) {
+        addonMult += addonRates[key];
+        addonLines.push({ name: addonNames[key], rate: addonRates[key] });
+      }
+      // Update toggle label
+      const midMid = (midLow + midHigh) / 2;
+      document.getElementById('tp-' + key).textContent =
+        (addonRates[key] > 0 ? '+' : '') + Math.round(addonRates[key] * 100) + '%';
+    });
+
+    const finalLow  = Math.round(midLow  * addonMult);
+    const finalHigh = Math.round(midHigh * addonMult);
+    const midEstimate = Math.round((finalLow + finalHigh) / 2);
+
+    // Render lines
+    const linesEl = document.getElementById('quote-lines');
+    let html = '';
+
+    // Base
+    html += lineHTML('Base rate (' + complexityLabel(parseInt(complexity)) + ')', fmt(midLow) + ' – ' + fmt(midHigh), '');
+
+    // Complexity note
+    if (cm !== 1) {
+      html += lineHTML('Complexity adjustment', (cm > 1 ? '+' : '') + Math.round((cm - 1) * 100) + '%', cm > 1 ? 'add' : 'sub');
+    }
+    if (rm !== 1) {
+      html += lineHTML('Revision rounds (' + revisionLabel(revisions) + ')', (rm > 1 ? '+' : '') + Math.round((rm - 1) * 100) + '%', rm > 1 ? 'add' : 'sub');
+    }
+    if (clm !== 1) {
+      const expLabels = { repeat: 'Repeat client', referral: 'Referral', agency: 'Agency' };
+      html += lineHTML(expLabels[clientExp] || '', (clm < 1 ? '' : '+') + Math.round((clm - 1) * 100) + '%', clm < 1 ? 'sub' : 'add');
+    }
+
+    addonLines.forEach(a => {
+      html += lineHTML(a.name, (a.rate > 0 ? '+' : '') + Math.round(a.rate * 100) + '%', a.rate > 0 ? 'add' : 'sub');
+    });
+
+    linesEl.innerHTML = html;
+
+    // Total
+    document.getElementById('q-total').textContent = fmt(midEstimate);
+    document.getElementById('q-range').textContent = fmt(finalLow) + ' – ' + fmt(finalHigh);
+
+    // Meta
+    document.getElementById('qm-timeline').textContent  = base.time;
+    document.getElementById('qm-revisions').textContent = revisionLabel(revisions);
+    document.getElementById('qm-date').textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function lineHTML(name, val, cls) {
+    return `<div class="quote-line">
+      <span class="quote-line-name">${name}</span>
+      <span class="quote-line-val ${cls}">${val}</span>
+    </div>`;
+  }
+
+  function copyQuote() {
+    const typeKey = document.getElementById('project-type').value;
+    if (!typeKey) return;
+
+    const clientName = document.getElementById('client-name').value.trim() || 'Client';
+    const base = BASE[typeKey];
+    const complexity = document.getElementById('complexity').value;
+    const revisions  = document.getElementById('revisions').value;
+    const clientExp  = document.getElementById('client-exp').value;
+    const cm = complexityMult(parseInt(complexity));
+    const rm = revisionMult(revisions);
+    const clm = clientMult(clientExp);
+    let addonMult = 1;
+    ['rush','usage','source','strategy','discount'].forEach(k => { if (addons[k]) addonMult += addonRates[k]; });
+
+    const finalLow  = Math.round(base.low  * cm * rm * clm * addonMult);
+    const finalHigh = Math.round(base.high * cm * rm * clm * addonMult);
+    const mid = Math.round((finalLow + finalHigh) / 2);
+
+    const activeAddons = Object.entries(addons).filter(([,v]) => v).map(([k]) => {
+      const n = { rush:'Rush Fee',usage:'Commercial Usage Rights',source:'Source Files',strategy:'Brand Strategy Session',discount:'Repeat Client Discount' };
+      return '  + ' + n[k] + ' (' + (addonRates[k] > 0 ? '+' : '') + Math.round(addonRates[k]*100) + '%)';
+    }).join('\n');
+
+    const text = [
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      'FREELANCE QUOTE — 2171 Visual Universe',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      '',
+      'Client:       ' + clientName,
+      'Project:      ' + base.name,
+      'Complexity:   ' + complexityLabel(parseInt(complexity)),
+      'Revisions:    ' + revisionLabel(revisions),
+      'Timeline:     ' + base.time,
+      '',
+      activeAddons ? 'Add-ons:\n' + activeAddons + '\n' : '',
+      'ESTIMATE:     ' + fmt(mid),
+      'Range:        ' + fmt(finalLow) + ' – ' + fmt(finalHigh),
+      '',
+      'Date:         ' + new Date().toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' }),
+      'Valid for:    7 days',
+      '',
+      '* This is an estimate. Final pricing subject to project scope confirmation.',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    ].filter(l => l !== undefined).join('\n');
+
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = 'Copied to clipboard ✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy Quote ↗'; btn.classList.remove('copied'); }, 2400);
+    });
+  }
+
+  // Init date
+  document.getElementById('qm-date').textContent = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+</script>
+
+</body>
+</html>
